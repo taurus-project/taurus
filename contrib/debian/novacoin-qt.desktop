@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Taurus
+Comment=Taurus P2P Cryptocurrency
+Comment[ru]=Taurus, P2P криптовалюта
+Comment[fr]=Taurus, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Taurus, eşten eşe kriptografik sanal para birimi
+Exec=/usr/bin/taurus-qt
+Terminal=false
+Type=Application
+Icon=/usr/share/pixmaps/taurus80.xpm
+MimeType=x-scheme-handler/taurus;
+Categories=Office;

@@ -1,0 +1,68 @@
+#!/bin/sh
+
+# PROVIDE: taurus
+# REQUIRE: LOGIN
+# KEYWORD: shutdown
+
+#
+# Add the following lines to /etc/rc.conf.local or /etc/rc.conf
+# to enable this service:
+#
+# taurus_enable (bool): Set to NO by default. Set this variable to YES if you want to enable taurus service.
+# taurus_config (path): Set to /usr/local/etc/taurus.conf by default.
+# taurus_user:  The user account taurus daemon runs as. It uses 'root' user by default.
+# taurus_group: The group account taurus daemon runs as. It uses 'wheel' group by default.
+# taurus_datadir (str): Default to "/var/db/taurus". Base data directory.
+
+. /etc/rc.subr
+
+name=taurus
+rcvar=taurus_enable
+
+: ${taurus_enable:=NO}
+: ${taurus_config=/usr/local/etc/taurus.conf}
+: ${taurus_datadir=/var/db/taurus}
+: ${taurus_user="root"}
+: ${taurus_group="wheel"}
+
+required_files=${taurus_config}
+command=/usr/local/bin/taurusd
+taurus_chdir=${taurus_datadir}
+pidfile="${taurus_datadir}/taurusd.pid"
+stop_cmd=taurus_stop
+command_args="-conf=${taurus_config} -datadir=${taurus_datadir} -daemon -pid=${pidfile}"
+start_precmd="${name}_prestart"
+
+taurus_create_datadir()
+{
+	echo "Creating data directory"
+	eval mkdir -p ${taurus_datadir}
+	[ $? -eq 0 ] && chown -R ${taurus_user}:${taurus_group} ${taurus_datadir}
+}
+
+taurus_prestart()
+{
+	if [ ! -d "${taurus_datadir}/." ]; then
+		taurus_create_datadir || return 1
+	fi
+}
+
+taurus_requirepidfile()
+{
+	if [ ! "0`check_pidfile ${pidfile} ${command}`" -gt 1 ]; then
+		echo "${name} not running? (check $pidfile)."
+		exit 1
+	fi
+}
+
+taurus_stop()
+{
+    taurus_requirepidfile
+
+	echo "Stopping ${name}."
+	eval ${command} -conf=${taurus_config} -datadir=${taurus_datadir} stop
+	wait_for_pids ${rc_pid}
+}
+
+load_rc_config $name
+run_rc_command "$1"
